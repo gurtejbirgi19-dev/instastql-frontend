@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstantSQL — SQL in Plain English</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #00e5a0;
+    --accent2: #7b6cff;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --danger: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,160,0.08) 0%, transparent 70%);
+    top: -200px; right: -100px;
+  }
+  .glow-orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(123,108,255,0.07) 0%, transparent 70%);
+    bottom: 100px; left: -150px;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex; gap: 32px; list-style: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .nav-links a { color: inherit; text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: #fff; transform: translateY(-1px); }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 140px 24px 80px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    color: var(--accent);
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    max-width: 800px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .accent-word { color: var(--accent); }
+
+  .hero-sub {
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 480px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,160,0.3); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-stats {
+    margin-top: 64px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--accent); }
+  .stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-top: 4px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tool-section {
+    padding: 80px 24px 100px;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label { font-size: 0.72rem; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 12px; }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 48px;
+  }
+
+  .usage-bar {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+  }
+  .usage-bar-left { color: var(--muted); }
+  .usage-bar-right { color: var(--accent); font-weight: 500; }
+  .usage-track {
+    height: 3px;
+    background: var(--border);
+    margin-top: 8px;
+    position: relative;
+  }
+  .usage-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s ease;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .tool-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted); }
+
+  .form-select, .form-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-select:focus, .form-input:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+
+  .query-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .query-input:focus { border-color: var(--accent); }
+  .query-input::placeholder { color: var(--muted); }
+
+  .generate-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .generate-btn:hover:not(:disabled) { background: #fff; box-shadow: 0 8px 30px rgba(0,229,160,0.25); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .result-area { margin-top: 24px; display: none; }
+  .result-area.visible { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .result-title { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--accent); }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .result-box {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: #e0e0ff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 60px;
+  }
+  .result-box .kw { color: #7b6cff; font-weight: 500; }
+  .result-box .fn { color: #00e5a0; }
+  .result-box .str { color: #ffb347; }
+  .result-box .num { color: #ff6b9d; }
+
+  .explanation-box {
+    margin-top: 12px;
+    background: rgba(0,229,160,0.04);
+    border: 1px solid rgba(0,229,160,0.12);
+    padding: 16px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: #a0a0c0;
+  }
+
+  /* Upgrade modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 40px;
+    max-width: 440px;
+    width: 90%;
+    position: relative;
+    text-align: center;
+  }
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .modal-icon { font-size: 2.5rem; margin-bottom: 16px; }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+  }
+  .modal-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 28px; }
+
+  .modal-btns { display: flex; flex-direction: column; gap: 10px; }
+  .modal-btn-pro {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-btn-pro:hover { background: #fff; }
+  .modal-btn-team {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-btn-team:hover { border-color: var(--accent2); color: var(--accent2); }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .error-msg {
+    background: rgba(255,77,109,0.08);
+    border: 1px solid rgba(255,77,109,0.25);
+    color: #ff4d6d;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    margin-top: 16px;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span {
+    width: 6px; height: 6px;
+    background: #000;
+    border-radius: 50%;
+    animation: dot-bounce 1.2s ease-in-out infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .examples-section {
+    padding: 80px 24px;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .example-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .example-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,229,160,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .example-card:hover { border-color: rgba(0,229,160,0.3); }
+  .example-card:hover::after { opacity: 1; }
+  .example-prompt { font-size: 0.82rem; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+  .example-db { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .example-arrow { position: absolute; top: 16px; right: 16px; color: var(--accent); font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; }
+  .example-card:hover .example-arrow { opacity: 1; }
+
+  .how-section {
+    padding: 80px 24px;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .step {
+    position: relative;
+    padding: 28px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .step-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 3rem; color: rgba(0,229,160,0.12); line-height: 1; margin-bottom: 16px; }
+  .step-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+  .step-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .pricing-section {
+    padding: 80px 24px 120px;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .price-card.featured {
+    border-color: var(--accent);
+    background: linear-gradient(160deg, rgba(0,229,160,0.05), var(--surface));
+  }
+  .price-card.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+  }
+
+  .price-tier { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .price-amount { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.4rem; line-height: 1; margin-bottom: 4px; }
+  .price-amount sup { font-size: 1rem; vertical-align: super; }
+  .price-period { font-size: 0.75rem; color: var(--muted); margin-bottom: 24px; }
+
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .price-features li { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .price-features li::before { content: '→'; color: var(--accent); font-size: 0.75rem; }
+
+  .price-btn {
+    width: 100%;
+    padding: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+  }
+  .price-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .price-card.featured .price-btn { background: var(--accent); color: #000; border-color: var(--accent); }
+  .price-card.featured .price-btn:hover { background: #fff; }
+
+  /* Success/cancel banners */
+  .banner {
+    position: fixed;
+    top: 80px; left: 50%; transform: translateX(-50%);
+    z-index: 150;
+    padding: 14px 28px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    display: none;
+  }
+  .banner.success { background: var(--accent); color: #000; }
+  .banner.error-banner { background: var(--danger); color: #fff; }
+  .banner.visible { display: block; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; opacity: 0.5; }
+  .footer-note { font-size: 0.72rem; color: var(--muted); }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); max-width: 860px; margin: 0 auto; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  @media (max-width: 640px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .tool-row { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .tool-card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Replace this with your actual Railway backend URL once deployed -->
+<script>
+  const BACKEND_URL = 'https://instasql-production.up.railway.app';
+  const STRIPE_PUBLISHABLE_KEY = 'pk_test_51THuxNRo3ziSIxVYeqX7oAICk76qUjDJdIbgEBLrV50BZzUwMcyMGRlJUo1qng37VPWY1353ZI5vcCKJlfAj7pZR00H90g4eZE';
+</script>
+
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<!-- Success/Cancel banners -->
+<div class="banner success" id="successBanner">✓ Payment successful! You now have unlimited queries.</div>
+<div class="banner error-banner" id="cancelBanner">Payment cancelled. You're still on the free plan.</div>
+
+<!-- Upgrade Modal -->
+<div class="modal-overlay" id="upgradeModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">⚡</div>
+    <div class="modal-title">Free limit reached</div>
+    <div class="modal-desc">You've used all 10 free queries this month. Upgrade to Pro for unlimited SQL generation, query history, and advanced features.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-pro" onclick="checkout('pro')">UPGRADE TO PRO — $19/mo</button>
+      <button class="modal-btn-team" onclick="checkout('team')">TEAM PLAN — $49/mo (5 seats)</button>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    InstantSQL
+  </div>
+  <ul class="nav-links">
+    <li><a href="#tool">TOOL</a></li>
+    <li><a href="#how">HOW IT WORKS</a></li>
+    <li><a href="#pricing">PRICING</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">TRY FREE</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">⚡ POWERED BY AI</div>
+  <h1>Write <span class="accent-word">SQL</span><br>in plain English</h1>
+  <p class="hero-sub">Stop Googling SQL syntax. Describe what you need in plain language — get a production-ready query in seconds.</p>
+  <div class="hero-actions">
+    <a href="#tool" class="btn-primary" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'}); return false;">START FOR FREE</a>
+    <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">SEE HOW IT WORKS</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">10</div><div class="stat-label">FREE QUERIES/MO</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">DB DIALECTS</div></div>
+    <div class="stat"><div class="stat-num">&lt;3s</div><div class="stat-label">AVG RESPONSE</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="tool-section" id="tool">
+  <div class="section-label">// THE TOOL</div>
+  <h2 class="section-title">Generate your query</h2>
+
+  <!-- Usage bar -->
+  <div class="usage-bar" id="usageBar">
+    <div>
+      <div class="usage-bar-left">FREE QUERIES USED THIS MONTH</div>
+      <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:0%"></div></div>
+    </div>
+    <div class="usage-bar-right" id="usageCount">— / 10</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-row">
+      <div class="form-group">
+        <label class="form-label">// DATABASE TYPE</label>
+        <select class="form-select" id="dbType">
+          <option value="MySQL">MySQL</option>
+          <option value="PostgreSQL">PostgreSQL</option>
+          <option value="SQLite">SQLite</option>
+          <option value="Microsoft SQL Server">Microsoft SQL Server</option>
+          <option value="BigQuery">BigQuery</option>
+          <option value="Snowflake">Snowflake</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">// TABLE CONTEXT (optional)</label>
+        <input class="form-input" id="tableContext" placeholder="e.g. users, orders, products" />
+      </div>
+    </div>
+
+    <label class="form-label" style="display:block; margin-bottom:8px;">// DESCRIBE WHAT YOU WANT</label>
+    <textarea class="query-input" id="queryInput" placeholder="e.g. Show me all customers who placed more than 3 orders in the last 30 days, sorted by total spend"></textarea>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateSQL()">
+      <span id="btnText">GENERATE SQL QUERY</span>
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result-area" id="resultArea">
+      <div class="result-header">
+        <span class="result-title">// GENERATED QUERY</span>
+        <button class="copy-btn" onclick="copySQL()">COPY SQL</button>
+      </div>
+      <div class="result-box" id="resultBox"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="examples-section">
+  <div class="section-label">// EXAMPLES</div>
+  <h2 class="section-title">Try these prompts</h2>
+  <div class="examples-grid" id="examplesGrid"></div>
+</section>
+
+<div class="divider"></div>
+
+<section class="how-section" id="how">
+  <div class="section-label">// HOW IT WORKS</div>
+  <h2 class="section-title">Three steps, zero syntax</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Describe it</div>
+      <div class="step-desc">Type what you want in plain English. No SQL knowledge required.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Pick your DB</div>
+      <div class="step-desc">Select your database dialect — MySQL, Postgres, BigQuery, and more.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Copy & run</div>
+      <div class="step-desc">Get a clean, ready-to-run query with an explanation of how it works.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="pricing-section" id="pricing">
+  <div class="section-label">// PRICING</div>
+  <h2 class="section-title">Start free, scale when ready</h2>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-tier">FREE</div>
+      <div class="price-amount">$0</div>
+      <div class="price-period">forever</div>
+      <ul class="price-features">
+        <li>10 queries / month</li>
+        <li>All DB dialects</li>
+        <li>Basic queries</li>
+        <li>Copy to clipboard</li>
+      </ul>
+      <button class="price-btn" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">GET STARTED</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-tier">PRO</div>
+      <div class="price-amount"><sup>$</sup>19</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li>Unlimited queries</li>
+        <li>All DB dialects</li>
+        <li>Query history saved</li>
+        <li>Advanced joins & subqueries</li>
+        <li>Priority generation</li>
+      </ul>
+      <button class="price-btn" onclick="checkout('pro')">START PRO</button>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">TEAM</div>
+      <div class="price-amount"><sup>$</sup>49</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li>Everything in Pro</li>
+        <li>Up to 5 seats</li>
+        <li>Shared query library</li>
+        <li>API access</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="price-btn" onclick="checkout('team')">START TEAM</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">InstantSQL</div>
+  <div class="footer-note">Built with Claude AI · © 2025 InstantSQL</div>
+</footer>
+
+<script>
+const EXAMPLES = [
+  { prompt: "Show me all customers who placed more than 3 orders in the last 30 days", db: "MySQL" },
+  { prompt: "Get the top 10 products by total revenue this year", db: "PostgreSQL" },
+  { prompt: "Find all users who signed up but never made a purchase", db: "MySQL" },
+  { prompt: "Calculate the monthly revenue trend for the past 12 months", db: "BigQuery" },
+  { prompt: "Show duplicate email addresses in the users table", db: "PostgreSQL" },
+  { prompt: "Get the average order value by country, sorted highest first", db: "Snowflake" },
+];
+
+// Check URL params for payment result
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('success') === 'true') {
+    document.getElementById('successBanner').classList.add('visible');
+    setTimeout(() => document.getElementById('successBanner').classList.remove('visible'), 5000);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+  if (params.get('canceled') === 'true') {
+    document.getElementById('cancelBanner').classList.add('visible');
+    setTimeout(() => document.getElementById('cancelBanner').classList.remove('visible'), 4000);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+  loadUsage();
+  renderExamples();
+});
+
+async function loadUsage() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/usage`);
+    const data = await res.json();
+    updateUsageBar(data.used, data.limit);
+  } catch {
+    updateUsageBar(0, 10);
+  }
+}
+
+function updateUsageBar(used, limit) {
+  const pct = Math.min(100, (used / limit) * 100);
+  document.getElementById('usageFill').style.width = pct + '%';
+  document.getElementById('usageCount').textContent = `${used} / ${limit}`;
+  if (pct >= 80) document.getElementById('usageFill').style.background = '#ff4d6d';
+}
+
+function renderExamples() {
+  const grid = document.getElementById('examplesGrid');
+  EXAMPLES.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'example-card';
+    card.innerHTML = `
+      <div class="example-prompt">"${ex.prompt}"</div>
+      <div class="example-db">// ${ex.db}</div>
+      <div class="example-arrow">→</div>
+    `;
+    card.onclick = () => {
+      document.getElementById('queryInput').value = ex.prompt;
+      document.getElementById('dbType').value = ex.db;
+      document.getElementById('tool').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(generateSQL, 600);
+    };
+    grid.appendChild(card);
+  });
+}
+
+function highlightSQL(sql) {
+  const keywords = ['SELECT','FROM','WHERE','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET','INSERT INTO','UPDATE','DELETE','AS','AND','OR','NOT','IN','BETWEEN','LIKE','IS NULL','IS NOT NULL','COUNT','SUM','AVG','MIN','MAX','DISTINCT','WITH','UNION','CASE','WHEN','THEN','ELSE','END','CREATE','TABLE','INDEX','VIEW'];
+  let h = sql;
+  keywords.forEach(kw => {
+    h = h.replace(new RegExp(`\\b${kw}\\b`, 'gi'), `<span class="kw">${kw}</span>`);
+  });
+  h = h.replace(/'([^']*)'/g, `<span class="str">'$1'</span>`);
+  h = h.replace(/\b(\d+)\b/g, `<span class="num">$1</span>`);
+  return h;
+}
+
+async function generateSQL() {
+  const prompt = document.getElementById('queryInput').value.trim();
+  const dbType = document.getElementById('dbType').value;
+  const tableContext = document.getElementById('tableContext').value.trim();
+
+  if (!prompt) { showError('Please describe what you want to query.'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  const btnText = document.getElementById('btnText');
+  const resultArea = document.getElementById('resultArea');
+  const resultBox = document.getElementById('resultBox');
+  const explanationBox = document.getElementById('explanationBox');
+  const errorMsg = document.getElementById('errorMsg');
+
+  btn.disabled = true;
+  btnText.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+  resultArea.classList.remove('visible');
+  errorMsg.classList.remove('visible');
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, dbType, tableContext, isPro: false })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 429 && data.upgradeRequired) {
+      document.getElementById('upgradeModal').classList.add('visible');
+      return;
+    }
+
+    if (!res.ok) throw new Error(data.error || 'Failed to generate SQL');
+
+    resultBox.innerHTML = highlightSQL(data.sql);
+    explanationBox.textContent = data.explanation ? `💡 ${data.explanation}` : '';
+    resultArea.classList.add('visible');
+
+    // Update usage bar
+    if (data.remaining !== null) {
+      const used = 10 - data.remaining;
+      updateUsageBar(used, 10);
+    }
+
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'GENERATE SQL QUERY';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = `⚠ ${msg}`;
+  el.classList.add('visible');
+}
+
+function copySQL() {
+  const text = document.getElementById('resultBox').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'COPIED ✓';
+    setTimeout(() => btn.textContent = 'COPY SQL', 2000);
+  });
+}
+
+async function checkout(plan) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/create-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+  } catch (err) {
+    alert('Could not start checkout. Please try again.');
+  }
+}
+
+function closeModal() {
+  document.getElementById('upgradeModal').classList.remove('visible');
+}
+
+document.getElementById('queryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.metaKey) generateSQL();
+});
+</script>
+</body>
+</html>
