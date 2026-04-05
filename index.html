@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InstantSQL — SQL in Plain English</title>
+<title>QueryCraft — SQL in Plain English</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -558,7 +558,7 @@
 
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-top: 40px;
   }
@@ -680,8 +680,8 @@
     <div class="modal-title">Free limit reached</div>
     <div class="modal-desc">You've used all 10 free queries this month. Upgrade to Pro for unlimited SQL generation, query history, and advanced features.</div>
     <div class="modal-btns">
-      <button class="modal-btn-pro" onclick="checkout('pro')">UPGRADE TO PRO — $19/mo</button>
-      <button class="modal-btn-team" onclick="checkout('team')">TEAM PLAN — $49/mo (5 seats)</button>
+      <button class="modal-btn-pro" onclick="checkout('starter')">START STARTER — $9/mo (100 queries)</button>
+      <button class="modal-btn-team" onclick="checkout('pro')">GO PRO — $19/mo (unlimited)</button>
     </div>
   </div>
 </div>
@@ -689,7 +689,7 @@
 <nav>
   <div class="logo">
     <div class="logo-dot"></div>
-    InstantSQL
+    QueryCraft
   </div>
   <ul class="nav-links">
     <li><a href="#tool">TOOL</a></li>
@@ -813,10 +813,23 @@
       <ul class="price-features">
         <li>10 queries / month</li>
         <li>All DB dialects</li>
-        <li>Basic queries</li>
+        <li>Plain English explanations</li>
         <li>Copy to clipboard</li>
       </ul>
       <button class="price-btn" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">GET STARTED</button>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">STARTER</div>
+      <div class="price-amount"><sup>$</sup>9</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li>100 queries / month</li>
+        <li>All DB dialects</li>
+        <li>Plain English explanations</li>
+        <li>Query history saved</li>
+        <li>Email support</li>
+      </ul>
+      <button class="price-btn" onclick="checkout('starter')">START STARTER</button>
     </div>
     <div class="price-card featured">
       <div class="price-tier">PRO</div>
@@ -825,7 +838,7 @@
       <ul class="price-features">
         <li>Unlimited queries</li>
         <li>All DB dialects</li>
-        <li>Query history saved</li>
+        <li>Plain English explanations</li>
         <li>Advanced joins & subqueries</li>
         <li>Priority generation</li>
       </ul>
@@ -848,8 +861,8 @@
 </section>
 
 <footer>
-  <div class="footer-logo">InstantSQL</div>
-  <div class="footer-note">Built with Claude AI · © 2025 InstantSQL</div>
+  <div class="footer-logo">QueryCraft</div>
+  <div class="footer-note">Built with Claude AI · © 2025 QueryCraft</div>
 </footer>
 
 <script>
